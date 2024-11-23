@@ -1,0 +1,46 @@
+services:
+  #  --------------------------------------------
+  java-app-kelly:
+    build:
+      context: ./AppMonolitica
+      dockerfile: Dockerfile
+    container_name: java-app-cra
+    depends_on:
+      mysql-cra:
+        condition: service_healthy
+    ports:
+      - "8024:8080"
+    networks:
+      - app-network-kelly
+  #  --------------------------------------------
+  mysql-kelly:
+    build:
+      context: ./MySQL
+      dockerfile: Dockerfile
+    container_name: mysql-kelly
+    volumes:
+      - ./MySQL/mysql_data:/var/lib/mysql
+    ports:
+      - "8025:3306"
+    networks:
+      - app-network-kelly
+    healthcheck:
+      test: [ "CMD","mysql", "-u", "root", "-proot" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  #  --------------------------------------------
+  adminer-kelly:
+    image: adminer
+    container_name: adminer-kelly
+    depends_on:
+      - mysql-kelly
+    ports:
+      - "8026:8080"
+    networks:
+      - app-network-kelly
+#  --------------------------------------------
+networks:
+  app-network-kelly:
+    driver: bridge
+    name: app-network-kelly
